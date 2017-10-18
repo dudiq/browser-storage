@@ -19,6 +19,7 @@
 * */
 (function(){
     var canUseConsole = (typeof console == 'object');
+    var PREFIX = 'bs';
 
     function onError() {
         var list = Array.prototype.slice.apply(arguments);
