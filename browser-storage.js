@@ -5,7 +5,7 @@
 * var myLocalStorage = JrMakeStorage('prefix', 'local-storage', window.localStorage);
 * var mySessionStorage = JrMakeStorage('prefix', 'session-storage', window.sessionStorage);
 * myLocalStorage('myKey', 'myWord'); - set single key
-* myLocalStorage.removeKey('myKey); - remove single key
+* myLocalStorage.remove('myKey); - remove single key
 * myLocalStorage.clear(); - remove all keys
 * myLocalStorage.setPrefix(); - set prefix to this plugin localStorage keys
 * myLocalStorage.map(cb, opt) - walk in stored keys
@@ -14,12 +14,14 @@
 *
 * myLocalStorage('myKey') // return 'myWord'
 *
-* licence: MIT, dudiq 2016
+* licence: MIT, dudiq 2017
 *
 * */
+
 (function(){
     var canUseConsole = (typeof console == 'object');
     var PREFIX = 'bs';
+    var glob = (typeof window !== 'undefined') ? window : {};
 
     function onError() {
         var list = Array.prototype.slice.apply(arguments);
@@ -28,6 +30,9 @@
     }
 
     var eventStorageList = [];
+
+    var EVENT_TAB = 'event-tab';
+    var EVENT_STORAGE = 'event-storage';
 
     function onStorage(ev) {
         for (var i = 0, l = eventStorageList.length; i < l; i++){
@@ -55,26 +60,45 @@
                         }
                     }
 
-                    var storeEv = {
-                        key: viewKey,
-                        newValue: newValue
-                    };
+                    var storeEv = makeEv(key, newValue, EVENT_STORAGE);
                     item.process(storeEv);
                 }
             }
         }
     }
 
-    if (window.addEventListener) {
-        window.addEventListener('storage', onStorage, false);
-    } else if (window.attachEvent) {
-        window.attachEvent('onstorage', onStorage);
+    if (glob.addEventListener) {
+        glob.addEventListener('storage', onStorage, false);
+    } else if (glob.attachEvent) {
+        glob.attachEvent('onstorage', onStorage);
     } else {
-        window.onstorage = onStorage;
+        glob.onstorage = onStorage;
     }
 
-    function makeStorage(prefix, storeName, currentStorage) {
+    function getStorage(store) {
+        if (!store){
+            store = {
+                setItem: function () {
+                    //cap
+                },
+                getItem: function () {
+                    //cap
+                },
+                removeItem: function () {
+                    //cap
+                },
+                clear: function () {
+                    //cap
+                }
+            }
+        }
+        return store;
+    }
+
+    function makeStorage(prefix, storeName, store) {
         var customPrefix = prefix;
+        var evCbs = [];
+        var currentStorage = getStorage(store);
 
         function storageInst(key, value){
 
@@ -91,6 +115,8 @@
                     var setVal = JSON.stringify(pattObj);
                     currentStorage.setItem(customPrefix + key, setVal);
                     ret = value;
+                    var storeEv = makeEv(key, value, EVENT_TAB);
+                    trigger(evCbs, storeEv);
                 } catch(e){
                     // quota limit exceed
                     ret = null;
@@ -167,19 +193,19 @@
             opt = null;
         };
 
-        addEvents(storeName, storageInst, currentStorage);
+        addEvents(storeName, storageInst, currentStorage, evCbs);
+
+        storageInst.EVENT_TAB = EVENT_TAB;
+        storageInst.EVENT_STORAGE = EVENT_STORAGE;
 
         return storageInst;
     }
 
-    function addEvents(storeName, storageInst, currentStorage) {
-        var evCbs = [];
+    function addEvents(storeName, storageInst, currentStorage, evCbs) {
         var evObj = {
             name: storeName,
             process: function (ev) {
-                for (var i = 0, l = evCbs.length; i < l; i++){
-                    evCbs[i](ev);
-                }
+                trigger(evCbs, ev);
             },
             store: storageInst,
             storageArea: currentStorage
@@ -196,6 +222,20 @@
         eventStorageList.push(evObj);
     }
 
+    function trigger(evCbs, ev) {
+        for (var i = 0, l = evCbs.length; i < l; i++){
+            evCbs[i](ev);
+        }
+    }
+
+    function makeEv(key, newValue, type) {
+        return {
+            key: key,
+            newValue: newValue,
+            type: type
+        }
+    }
+
 
     if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
         module.exports = makeStorage;
@@ -206,7 +246,7 @@
             });
         }
         else {
-            window.JrMakeStorage = makeStorage;
+            glob.JrMakeStorage = makeStorage;
         }
     }
 
