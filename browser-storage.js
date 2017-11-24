@@ -128,7 +128,7 @@
             } else {
                 try {
                     var storedVal = currentStorage.getItem(customPrefix + key);
-                    var getVal = JSON.parse(storedVal);
+                    var getVal = storedVal ? JSON.parse(storedVal) : null;
                     if (getVal){
                         ret = getVal.val;
                     } else {
