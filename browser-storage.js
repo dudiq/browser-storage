@@ -18,7 +18,7 @@
 *
 * */
 
-(function(){
+(function () {
     var canUseConsole = (typeof console == 'object');
     var PREFIX = 'bs';
     var glob = (typeof window !== 'undefined') ? window : {};
@@ -35,26 +35,26 @@
     var EVENT_STORAGE = 'event-storage';
 
     function onStorage(ev) {
-        for (var i = 0, l = eventStorageList.length; i < l; i++){
+        for (var i = 0, l = eventStorageList.length; i < l; i++) {
             var item = eventStorageList[i];
-            if (item.storageArea === ev.storageArea){
+            if (item.storageArea === ev.storageArea) {
                 var prefix = item.store.getPrefix();
                 var key = ev.key;
-                if (key && key.indexOf(prefix) == 0){
+                if (key && key.indexOf(prefix) == 0) {
                     // all good
                     var viewKey = key.substring(prefix.length);
 
                     var newValue = ev.newValue;
-                    if (newValue){
+                    if (newValue) {
                         try {
                             var getVal = JSON.parse(newValue);
-                            if (getVal){
+                            if (getVal) {
                                 newValue = getVal.val;
                             } else {
                                 newValue = null;
                             }
                             getVal = null;
-                        } catch(e){
+                        } catch (e) {
                             newValue = null;
                             onError('#' + 'onStorage event try{}catch{}', item.name, e);
                         }
@@ -76,7 +76,7 @@
     }
 
     function getStorage(store) {
-        if (!store){
+        if (!store) {
             store = {
                 setItem: function () {
                     //cap
@@ -100,10 +100,10 @@
         var evCbs = [];
         var currentStorage = getStorage(store);
 
-        function storageInst(key, value){
+        function storageInst(key, value) {
 
             var ret;
-            if (value !== undefined){
+            if (value !== undefined) {
                 //setter
                 // for each item creating new object with some params.
                 var pattObj = {
@@ -117,10 +117,10 @@
                     ret = value;
                     var storeEv = makeEv(key, value, EVENT_TAB);
                     trigger(evCbs, storeEv);
-                } catch(e){
+                } catch (e) {
                     // quota limit exceed
                     ret = null;
-                    onError('#' + storeName, 'quota limit exceed',e);
+                    onError('#' + storeName, 'quota limit exceed', e);
                 }
                 delete pattObj.val;
                 delete pattObj.time;
@@ -129,13 +129,13 @@
                 try {
                     var storedVal = currentStorage.getItem(customPrefix + key);
                     var getVal = storedVal ? JSON.parse(storedVal) : null;
-                    if (getVal){
+                    if (getVal) {
                         ret = getVal.val;
                     } else {
                         ret = null;
                     }
                     getVal = null;
-                } catch(e){
+                } catch (e) {
                     ret = null;
                     onError('#' + storeName, e);
                 }
@@ -144,25 +144,25 @@
             return ret;
         }
 
-        storageInst.remove = function(key){
+        storageInst.remove = function (key) {
             var ret = true;
             try {
                 currentStorage.removeItem(customPrefix + key);
                 ret = true;
-            } catch(e){
+            } catch (e) {
                 ret = false;
             }
             return ret;
         };
 
-        storageInst.clear = function(){
+        storageInst.clear = function () {
             currentStorage.clear();
         };
 
         // define custom prefix for separated items
         // prefix must be NOT empty string
-        storageInst.setPrefix = function(newPrefix){
-            if (typeof newPrefix == "string"){
+        storageInst.setPrefix = function (newPrefix) {
+            if (typeof newPrefix == "string") {
                 customPrefix = !newPrefix ? PREFIX : newPrefix;
             }
         };
@@ -172,20 +172,20 @@
         };
 
         // walk in all fields in local storage
-        storageInst.map = function(callback, opt){
+        storageInst.map = function (callback, opt) {
             opt = opt || {};
             var getValue = opt.getValue;
             var prefixLen = customPrefix ? customPrefix.length : 0;
-            for (var key in currentStorage){
-                if (currentStorage.hasOwnProperty(key)){
+            for (var key in currentStorage) {
+                if (currentStorage.hasOwnProperty(key)) {
                     var subKey = key;
-                    if (prefixLen && key.indexOf(customPrefix) == 0){
+                    if (prefixLen && key.indexOf(customPrefix) == 0) {
                         subKey = key.substring(prefixLen);
                     }
 
                     var val = getValue ? currentStorage[key] : undefined;
                     var ret = callback(subKey, val);
-                    if (ret === false){
+                    if (ret === false) {
                         break;
                     }
                 }
@@ -215,7 +215,7 @@
         };
         storageInst.off = function (cb) {
             var pos = evCbs.indexOf(cb);
-            if (pos != -1){
+            if (pos != -1) {
                 evCbs.splice(pos, 1);
             }
         };
@@ -223,7 +223,7 @@
     }
 
     function trigger(evCbs, ev) {
-        for (var i = 0, l = evCbs.length; i < l; i++){
+        for (var i = 0, l = evCbs.length; i < l; i++) {
             evCbs[i](ev);
         }
     }
@@ -241,7 +241,7 @@
         module.exports = makeStorage;
     } else {
         if (typeof define === 'function' && define.amd) {
-            define([], function() {
+            define([], function () {
                 return makeStorage;
             });
         }
