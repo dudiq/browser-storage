@@ -1,9 +1,10 @@
-# Browser-storage adapter
+Browser-storage adapter
+=
 
-just simple browser storage with namespace support
+just simple browser storage with namespace support. Adapter for localStorage, sessionStorage in browser
 
 
- how to use:
+##how to use:
  
 ```
  //bind to local-storage
