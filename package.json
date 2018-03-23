@@ -1,5 +1,5 @@
 {
-  "name": "browser-storage",
+  "name": "jr-browser-storage",
   "version": "1.0.0",
   "description": "just simple adapter for browser localStorage, sessionStorage",
   "main": "browser-storage.js",
